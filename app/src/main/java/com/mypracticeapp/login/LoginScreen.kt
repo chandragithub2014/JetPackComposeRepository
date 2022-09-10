@@ -23,12 +23,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.mypracticeapp.R
 import com.mypracticeapp.ui.theme.DarkBlue
 
-@Preview(showSystemUi = true)
+
 @Composable
-fun Login(modifier: Modifier = Modifier,context: Context?=null, loginViewModel: LoginViewModel = viewModel()) {
+fun Login(modifier: Modifier = Modifier,
+          navController: NavController
+         ) {
     Column(
         modifier
             .fillMaxWidth()
@@ -37,14 +40,16 @@ fun Login(modifier: Modifier = Modifier,context: Context?=null, loginViewModel: 
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-    loginUserInterface(modifier = modifier,context,loginViewModel)
+    loginUserInterface(modifier = modifier,navController)
 }
 
 }
 
 
 @Composable
-fun loginUserInterface(modifier: Modifier,context: Context?,loginViewModel: LoginViewModel){
+fun loginUserInterface(modifier: Modifier,
+                       navController: NavController,
+                       loginViewModel: LoginViewModel = viewModel()){
 
 
     val emailState = remember {
@@ -56,6 +61,20 @@ fun loginUserInterface(modifier: Modifier,context: Context?,loginViewModel: Logi
     }
     val showPassword = remember {
         mutableStateOf(false)
+    }
+
+   LaunchedEffect(
+       loginViewModel.validationResponse.value
+        )
+    {
+
+        if (loginViewModel.validationResponse.value.equals("Login succesful", ignoreCase = true)) {
+           // loginViewModel._validationResponse.value = ""
+            loginViewModel.reset()
+            navController.navigate("userlist"){
+                popUpTo("login")
+            }
+        }
     }
 
     Text(text = stringResource(id = R.string.welcome_message),
@@ -130,7 +149,7 @@ fun loginUserInterface(modifier: Modifier,context: Context?,loginViewModel: Logi
     }
     spacer()
     Text(
-        text = loginViewModel._validationResponse.value ?: "",
+        text = loginViewModel.validationResponse.value?:"" ,
         style = TextStyle(color = Color.Black, fontSize = 24.sp)
     )
 }
@@ -142,19 +161,7 @@ fun spacer(){
     Spacer(modifier = Modifier.height(10.dp))
 }
 
-fun validate(email:String,password:String,context: Context?){
-    if(email.isBlank() && password.isBlank()){
-        Toast.makeText(context,"Email and Password are blank",Toast.LENGTH_LONG).show()
-    }else if(email.isBlank() && password.isNotBlank()){
-        Toast.makeText(context,"Email is blank",Toast.LENGTH_LONG).show()
-    }
-    else if(email.isNotBlank() && password.isBlank()){
-        Toast.makeText(context,"Password is blank",Toast.LENGTH_LONG).show()
-    }
-    else{
-        Toast.makeText(context,"Login successful",Toast.LENGTH_LONG).show()
-    }
-}
+
 
 
 
